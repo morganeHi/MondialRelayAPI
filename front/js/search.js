@@ -4,7 +4,7 @@ if (localStorage.getItem('Authorization')) {
 		try {
 			const {
 				data: { favoritePR: id }
-			} = await axios.get('http://localhost:3000/user/me', { headers: { Authorization: 'Bearer ' + localStorage.getItem('Authorization') } });
+			} = await axios.get('https://shielded-escarpment-13682.herokuapp.com/user/me', { headers: { Authorization: 'Bearer ' + localStorage.getItem('Authorization') } });
 			favoritePR = id;
 		} catch (err) {
 			console.log(err.message);
@@ -22,23 +22,21 @@ document.getElementById('searchPointRelais').addEventListener('submit', async e 
 	document.querySelector('#map').outerHTML = '<div id="map"></div>';
 
 	const body = {};
-	const inputs = Array.from(e.target.children).slice(0, 4);
+	const inputs = Array.from(e.target.elements).filter(element => element.tagName === 'INPUT' || element.tagName === 'SELECT');
 
 	inputs.forEach(input => {
 		body[input.name] = input.value;
 	});
 	try {
-		const { data } = await axios.post('http://localhost:3000/mr/search', body);
+		const { data } = await axios.post('https://shielded-escarpment-13682.herokuapp.com/mr/search', body);
+		console.log(data);
 
 		const map = L.map('map').setView([data[0].Latitude, data[0].Longitude], 13);
 
 		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(map);
 
 		data.forEach(pointRelais => {
-			const horaires = Object.entries(pointRelais).filter(
-				([key, value]) =>
-					((value.toString().includes('h') && value.toString().includes(' - ')) || value.toString() === 'Closed') && key.toLowerCase().includes('i')
-			);
+			const horaires = Object.entries(pointRelais).filter(([key]) => key.toLowerCase().includes('day'));
 			let horairesStr = '';
 			horaires.forEach(h => {
 				horairesStr += `<strong>${h[0].replaceAll('_', ' ')}</strong><br>${h[1]}<br>`;
@@ -83,7 +81,7 @@ document.getElementById('searchPointRelais').addEventListener('submit', async e 
 				star.style.color = '#ebc700';
 				star.classList.replace('emptyStar', 'fullStar');
 				const { data } = await axios.put(
-					'http://localhost:3000/user/me',
+					'https://shielded-escarpment-13682.herokuapp.com/user/me',
 					{ favoritePR: star.dataset.id },
 					{ headers: { Authorization: 'Bearer ' + localStorage.getItem('Authorization') } }
 				);
@@ -92,7 +90,7 @@ document.getElementById('searchPointRelais').addEventListener('submit', async e 
 				star.style.color = 'gray';
 				star.classList.replace('fullStar', 'emptyStar');
 				const { data } = await axios.put(
-					'http://localhost:3000/user/me',
+					'https://shielded-escarpment-13682.herokuapp.com/user/me',
 					{ favoritePR: 0 },
 					{ headers: { Authorization: 'Bearer ' + localStorage.getItem('Authorization') } }
 				);
